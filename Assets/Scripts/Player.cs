@@ -216,7 +216,20 @@ public class Player : MonoBehaviour
         } else if (jumpPadHit) {
             jumpCount++;
             if (_rigidbody2D.velocity.magnitude > _jumpMaxSpeed) {
-                _rigidbody2D.velocity = _rigidbody2D.velocity.normalized * _jumpMaxSpeed;
+                Vector2 jumpVelo = _rigidbody2D.velocity.normalized * _jumpMaxSpeed;
+
+                // used to ensure we always have a large y-component for our velocity (want to go up)
+                if (jumpVelo.y < 40f) {
+                    // calculates newX such that it has the SAME magnitude as jumpVelo
+                    // but with 40f as the y-component
+                    float newX = (float) Math.Sqrt(jumpVelo.sqrMagnitude - (40f * 40f));
+                    if (jumpVelo.x < 0) {
+                        newX = -newX;
+                    }
+                    jumpVelo = new Vector2(newX, 40f);
+                }
+
+                _rigidbody2D.velocity = jumpVelo;
             }
         }
 
@@ -271,7 +284,8 @@ public class Player : MonoBehaviour
 
 
         //WASD physics
-        if (isJumping) {
+        //&& _rigidbody2D.velocity < 
+        if (isJumping && _rigidbody2D.velocity.y < 5f) {
             v2 = _rigidbody2D.velocity;
             Vector2 up = new Vector2(0.0f, (jumpMult * veloPerTick));
             _rigidbody2D.AddForce(up, ForceMode2D.Impulse);
